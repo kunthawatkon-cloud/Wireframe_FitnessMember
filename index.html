@@ -1,0 +1,593 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>FitPulse Club</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: presenter strip on top; left = the live FitPulse website, right = ER explain panel (diagram focus + script + SQL) */
+:root{
+  --bg:#eef1f5; --paper:#ffffff; --ink:#18212f; --muted:#5d6879; --line:#d4dae3;
+  --brand:#1f3a5f; --brand-ink:#ffffff; --accent:#e2552b; --accent-soft:#fde6dd;
+  --ok:#1f7a4d; --ok-soft:#dcf1e5; --warn:#a86200; --warn-soft:#fbeccf; --bad:#b4232a; --bad-soft:#f8dcdd;
+  --dim:.16; --link:#1f5fa8;
+  --display:"Bai Jamjuree","IBM Plex Sans Thai",system-ui,sans-serif;
+  --body:"IBM Plex Sans Thai",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#10141b; --paper:#19202b; --ink:#e6eaf1; --muted:#9aa5b7; --line:#2f3847;
+  --brand:#2c4f7c; --brand-ink:#ffffff; --accent:#ff7a50; --accent-soft:#3b2219;
+  --ok:#5fcf95; --ok-soft:#163626; --warn:#f0b04b; --warn-soft:#3a2b10; --bad:#ff8a8f; --bad-soft:#3c1c1e; --dim:.22; --link:#8cbcff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10141b; --paper:#19202b; --ink:#e6eaf1; --muted:#9aa5b7; --line:#2f3847;
+  --brand:#2c4f7c; --brand-ink:#ffffff; --accent:#ff7a50; --accent-soft:#3b2219;
+  --ok:#5fcf95; --ok-soft:#163626; --warn:#f0b04b; --warn-soft:#3a2b10; --bad:#ff8a8f; --bad-soft:#3c1c1e; --dim:.22; --link:#8cbcff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--link)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.shell{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+/* presenter strip */
+.strip{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.strip h1{font-family:var(--display);font-size:20px;margin:0 12px 0 0}
+@media (max-width:760px){.strip h1{flex-basis:100%}.steps{flex-basis:100%}.step{font-size:12.5px}}
+.steps{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+.step{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:4px 12px 4px 6px;font-size:13.5px;cursor:pointer;display:flex;gap:6px;align-items:center}
+.step b{font-family:var(--mono);font-size:12px;background:var(--bg);border-radius:50%;width:22px;height:22px;display:grid;place-items:center}
+.step.on{border-color:var(--accent);background:var(--accent-soft)}
+.step.on b{background:var(--accent);color:#fff}
+.ghost{border:1.5px solid var(--line);background:transparent;border-radius:6px;padding:4px 10px;font-size:13px;cursor:pointer;color:var(--muted)}
+.grid{display:flex;flex-direction:column;gap:12px;max-width:1000px;margin:0 auto;width:100%}
+@media (max-width:980px){.grid{grid-template-columns:1fr}}
+/* app frame */
+.frame{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.urlbar{display:flex;align-items:center;gap:6px;padding:7px 12px;border-bottom:1px solid var(--line);background:var(--bg);font-family:var(--mono);font-size:12px;color:var(--muted)}
+.urlbar i{width:9px;height:9px;border-radius:50%;background:var(--line);display:block}
+.urlbar span{margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.apphead{background:var(--brand);color:var(--brand-ink);display:flex;align-items:center;gap:10px;padding:10px 16px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.01em}
+.logo small{font-weight:500;opacity:.75;font-size:12px;margin-left:6px}
+.nav{display:flex;gap:4px;flex-wrap:wrap;flex:1}
+.nav button{background:transparent;border:0;color:var(--brand-ink);opacity:.78;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:14px}
+.nav button.on{opacity:1;background:rgba(255,255,255,.16)}
+.who{font-size:13px;display:flex;gap:8px;align-items:center}
+.who button{background:rgba(255,255,255,.14);border:0;color:var(--brand-ink);border-radius:5px;padding:3px 10px;cursor:pointer}
+.view{padding:18px;display:flex;flex-direction:column;gap:14px;min-height:540px}
+h2{font-family:var(--display);font-size:22px;margin:0;text-wrap:balance}
+h3{font-family:var(--display);font-size:16px;margin:0}
+.sub{color:var(--muted);margin:0;font-size:14px}
+.card{border:1px solid var(--line);border-radius:8px;padding:14px;background:var(--paper)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+@media (max-width:560px){.form{grid-template-columns:1fr}}
+.fld{display:flex;flex-direction:column;gap:4px;font-size:13.5px;min-width:0}
+.fld.full{grid-column:1/-1}
+.fld label{font-weight:500}
+.fld input,.fld select{border:1.5px solid var(--line);border-radius:6px;padding:7px 10px;background:var(--paper);width:100%}
+.fld input:focus,.fld select:focus{border-color:var(--brand)}
+.col{font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--accent-soft);padding:0 6px;border-radius:3px;width:max-content;max-width:100%}
+.sec{font-family:var(--display);font-size:14.5px;font-weight:600;display:flex;gap:8px;align-items:center;margin-top:4px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.sp{flex:1}
+.btn{border:1.5px solid var(--brand);background:var(--paper);color:var(--brand);border-radius:6px;padding:6px 14px;cursor:pointer;font-size:14px;font-weight:500;white-space:nowrap}
+.btn.p{background:var(--brand);color:var(--brand-ink)}
+.btn.s{padding:3px 10px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+:root[data-theme="dark"] .btn:not(.p){color:var(--ink);border-color:var(--muted)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn:not(.p){color:var(--ink);border-color:var(--muted)}}
+.msg{border-radius:6px;padding:8px 12px;font-size:14px}
+.msg.ok{background:var(--ok-soft);color:var(--ok)} .msg.bad{background:var(--bad-soft);color:var(--bad)} .msg.warn{background:var(--warn-soft);color:var(--warn)}
+.pill{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;font-weight:500;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)} .pill.bad{background:var(--bad-soft);color:var(--bad)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.n{background:var(--bg);color:var(--muted)}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:var(--bg);font-weight:600;white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.n{font-variant-numeric:tabular-nums}
+.login{max-width:400px;margin:24px auto 0;display:flex;flex-direction:column;gap:12px;width:100%}
+.login h2{text-align:center}
+.demoacc{font-size:12.5px;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 10px}
+.demoacc code{font-family:var(--mono);font-size:12px;cursor:pointer;color:var(--ink)}
+.plans{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.plan{border:1.5px solid var(--line);border-radius:8px;display:flex;flex-direction:column;overflow:hidden}
+.plan .ph{background:var(--brand);color:var(--brand-ink);padding:8px;text-align:center;font-family:var(--display);font-weight:600}
+.plan .pb{padding:12px;display:flex;flex-direction:column;gap:5px;text-align:center;font-size:13px;flex:1;align-items:center}
+.price{font-family:var(--display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.15}
+.price small{font-family:var(--body);font-size:12px;font-weight:400}
+.plan .btn{margin-top:auto}
+.day{display:flex;flex-direction:column;gap:8px}
+.day>h3{font-size:14px;color:var(--muted);font-family:var(--body);font-weight:600}
+.cls{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.cls .t{font-family:var(--mono);font-size:13px}
+.cls b{font-family:var(--display);font-size:15.5px}
+.cls .m{font-size:13px;color:var(--muted)}
+.seat{font-size:12.5px;font-variant-numeric:tabular-nums}
+@media (max-width:520px){.cls{grid-template-columns:1fr}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.kpi .v{font-family:var(--display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:12.5px;color:var(--muted)}
+.prof{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:620px){.prof{grid-template-columns:1fr}}
+.kv{display:grid;grid-template-columns:110px 1fr;gap:3px 10px;font-size:14px}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.phones{display:flex;flex-direction:column;gap:6px}
+.phones .row{flex-wrap:nowrap}
+/* explain panel */
+.panel{display:flex;flex-direction:column;gap:12px;position:sticky;top:12px;min-width:0}
+@media (max-width:980px){.panel{position:static}}
+.pbox{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.ptitle{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+.ptitle .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.ptitle h3{font-size:17px}
+.say{font-size:14.5px;line-height:1.75}
+.say b{color:var(--ink)}
+.say .e{font-family:var(--mono);font-size:.88em;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:0 5px;border-radius:3px}
+.erwrap{position:relative;border:1px solid var(--line);border-radius:8px;background:var(--paper);overflow:hidden}
+#er{display:block;width:100%;height:330px}
+.erbig #er{height:auto;min-width:1100px}
+.erbig .erwrap{overflow-x:auto}
+.ertools{position:absolute;right:8px;top:8px;display:flex;gap:6px}
+.erbig .ertools{position:sticky;left:0}
+.rels{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+.rel{font-size:13px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.rel .mono{font-family:var(--mono);font-size:12px}
+.rel .k{font-family:var(--mono);font-weight:600;color:var(--accent)}
+.sql{font-family:var(--mono);font-size:12px;line-height:1.55;background:var(--bg);border-radius:6px;padding:10px;white-space:pre-wrap;overflow-x:auto;margin:0;max-height:260px;overflow-y:auto}
+.sql .c{color:var(--muted)}
+.foot{font-size:12px;color:var(--muted);display:flex;gap:8px;align-items:center;justify-content:center;margin:0}
+/* ER svg */
+.al{stroke:var(--ink);stroke-width:1.2}.rl{stroke:var(--ink);stroke-width:1.6}
+.at{fill:var(--paper);stroke:var(--ink);stroke-width:1.2}.at2{fill:none;stroke:var(--ink);stroke-width:1.1}.dv{stroke-dasharray:5 4}
+.en{fill:var(--paper);stroke:var(--ink);stroke-width:1.8}.dm{fill:var(--paper);stroke:var(--ink);stroke-width:1.6}
+.atx{font-family:var(--body);font-size:12.5px;fill:var(--ink)}
+.dtx{font-family:var(--body);font-weight:600;font-size:13px;fill:var(--ink)}
+.etx{font-family:var(--mono);font-weight:600;font-size:13.5px;fill:var(--ink)}
+.card{font-family:var(--mono);font-weight:700;font-size:14px;fill:var(--accent)}
+.pk{text-decoration:underline}
+#er g{transition:opacity .25s}
+#er.focus g{opacity:var(--dim)}
+#er.focus g.on,#er.focus g.on2{opacity:1}
+#er g.on .en{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.6}
+#er g.on .dm{fill:var(--accent-soft);stroke:var(--accent);stroke-width:2.2}
+#er g.on .rl{stroke:var(--accent);stroke-width:2.2}
+#er g.on .at,#er g.on .at2{stroke:var(--accent);stroke-width:2}
+#er g.on .at{fill:var(--accent-soft)}
+#er g.on .al{stroke:var(--accent)}
+@media (prefers-reduced-motion: reduce){#er g{transition:none}}
+</style>
+
+<div class="shell">
+  <div class="strip">
+    <h1>FitPulse Club</h1>
+    <div class="steps" id="steps"></div>
+    <button class="ghost" id="reset">รีเซ็ตข้อมูล</button>
+  </div>
+  <div class="grid">
+    <div class="frame">
+      
+      <div id="app"></div>
+    </div>
+    
+  </div>
+</div>
+
+<script>
+(function(){
+const TODAY='2026-11-05';
+const NV=new Set(['first_name','last_name','specialization','plan_name','type_name','room_name']);
+const REL_TXT={
+ R1:['MEMBER','1','Total','ใช้บัญชี','1','Partial','USER_ACCOUNT','สมาชิกทุกคนต้องมีบัญชี 1 บัญชี'],
+ R2:['TRAINER','1','Total','ใช้บัญชี','1','Partial','USER_ACCOUNT','เทรนเนอร์ทุกคนต้องมีบัญชี 1 บัญชี'],
+ R3:['MEMBER','M','Partial','เลือก','1','Partial','MEMBERSHIP_PLAN','สมาชิกหลายคนเลือกแพ็กเกจเดียวกันได้ คนใหม่อาจยังไม่เลือก'],
+ R4:['MEMBER','1','Partial','จอง','M','Total','CLASS_BOOKING','สมาชิก 1 คนจองได้หลายครั้ง การจองทุกแถวต้องมีเจ้าของ'],
+ R5:['CLASS_SCHEDULE','1','Partial','ถูกจองใน','M','Total','CLASS_BOOKING','คลาส 1 รอบมีคนจองได้หลายคน'],
+ R6:['TRAINER','1','Partial','สอน','M','Total','CLASS_SCHEDULE','เทรนเนอร์ 1 คนสอนได้หลายรอบ ทุกรอบต้องมีผู้สอน'],
+ R7:['CLASS_TYPE','1','Partial','จัดประเภท','M','Total','CLASS_SCHEDULE','ทุกรอบต้องเป็นประเภทใดประเภทหนึ่ง'],
+};
+function seed(){return {
+ user_account:[
+  {user_id:1,username:'admin',pw:'Admin@123',role:'Admin',account_status:'Active',created_at:'2026-09-01 09:00'},
+  {user_id:2,username:'teacher',pw:'Teacher@123',role:'Admin',account_status:'Active',created_at:'2026-09-01 09:05'},
+  {user_id:3,username:'coach_praewa',pw:'Trainer@123',role:'Trainer',account_status:'Active',created_at:'2026-09-02 10:00'},
+  {user_id:4,username:'coach_ton',pw:'Trainer@123',role:'Trainer',account_status:'Active',created_at:'2026-09-02 10:30'},
+  {user_id:5,username:'coach_mint',pw:'Trainer@123',role:'Trainer',account_status:'Pending',created_at:'2026-11-01 14:20'},
+  {user_id:6,username:'somchai',pw:'Member@123',role:'Member',account_status:'Active',created_at:'2026-10-03 08:10'},
+  {user_id:7,username:'napat',pw:'Member@123',role:'Member',account_status:'Active',created_at:'2026-01-10 17:45'},
+  {user_id:8,username:'kitti',pw:'Member@123',role:'Member',account_status:'Active',created_at:'2026-11-02 19:30'}],
+ membership_plan:[
+  {plan_id:1,plan_name:'Basic รายเดือน',duration_months:3,price:1890,billing_type:'Monthly',class_quota:8,is_active:1},
+  {plan_id:2,plan_name:'Flexi 6 เดือน',duration_months:6,price:1690,billing_type:'Monthly',class_quota:null,is_active:1},
+  {plan_id:3,plan_name:'Stay Fit 12 เดือน',duration_months:12,price:1490,billing_type:'Monthly',class_quota:null,is_active:1},
+  {plan_id:4,plan_name:'6 เดือน PIA',duration_months:6,price:1590,billing_type:'PIA',class_quota:null,is_active:1},
+  {plan_id:5,plan_name:'12 เดือน PIA',duration_months:12,price:1390,billing_type:'PIA',class_quota:null,is_active:1}],
+ member:[
+  {member_id:1,user_id:6,first_name:'สมชาย',last_name:'ใจดี',email:'somchai@email.com',birth_date:'1997-05-02',gender:'M',plan_id:1,start_date:'2026-10-03',end_date:'2027-01-03'},
+  {member_id:2,user_id:7,first_name:'นภัสสร',last_name:'แก้วมณี',email:'napat@email.com',birth_date:'2001-08-14',gender:'F',plan_id:5,start_date:'2026-01-10',end_date:'2027-01-10'},
+  {member_id:3,user_id:8,first_name:'กิตติพงษ์',last_name:'วงศ์ทอง',email:'kitti@email.com',birth_date:'1999-11-30',gender:'M',plan_id:null,start_date:null,end_date:null}],
+ member_phone:[{member_id:1,phone:'081-234-5678'},{member_id:1,phone:'02-111-2222'},{member_id:2,phone:'089-555-1212'},{member_id:3,phone:'062-777-8899'}],
+ trainer:[
+  {trainer_id:1,user_id:3,first_name:'แพรวา',last_name:'สายลม',email:'praewa@fitpulse.com',specialization:'Yoga, Pilates',experience_years:6,hire_date:'2024-02-01'},
+  {trainer_id:2,user_id:4,first_name:'ต้น',last_name:'แข็งแรง',email:'ton@fitpulse.com',specialization:'HIIT, Body Pump',experience_years:4,hire_date:'2025-06-15'},
+  {trainer_id:3,user_id:5,first_name:'มิ้นท์',last_name:'ใจเย็น',email:'mint@email.com',specialization:'Zumba',experience_years:2,hire_date:null}],
+ trainer_phone:[{trainer_id:1,phone:'086-100-2000'},{trainer_id:2,phone:'087-300-4000'},{trainer_id:2,phone:'02-555-6666'},{trainer_id:3,phone:'088-700-8000'}],
+ class_type:[{class_type_id:1,type_name:'Yoga',level:'Beginner'},{class_type_id:2,type_name:'HIIT',level:'Advanced'},{class_type_id:3,type_name:'Pilates',level:'Beginner'},{class_type_id:4,type_name:'Spinning',level:'Intermediate'},{class_type_id:5,type_name:'Body Pump',level:'Intermediate'}],
+ class_schedule:[
+  {schedule_id:1,class_type_id:1,trainer_id:1,room_name:'Studio A',class_date:'2026-11-09',start_time:'07:00',end_time:'08:00',max_capacity:20,schedule_status:'Open'},
+  {schedule_id:2,class_type_id:2,trainer_id:2,room_name:'Studio B',class_date:'2026-11-09',start_time:'12:00',end_time:'12:45',max_capacity:2,schedule_status:'Full'},
+  {schedule_id:3,class_type_id:3,trainer_id:1,room_name:'Studio A',class_date:'2026-11-11',start_time:'09:00',end_time:'10:00',max_capacity:12,schedule_status:'Open'},
+  {schedule_id:4,class_type_id:5,trainer_id:2,room_name:'Studio B',class_date:'2026-11-12',start_time:'19:00',end_time:'20:00',max_capacity:20,schedule_status:'Open'},
+  {schedule_id:5,class_type_id:1,trainer_id:1,room_name:'Studio A',class_date:'2026-10-26',start_time:'07:00',end_time:'08:00',max_capacity:20,schedule_status:'Open'}],
+ class_booking:[
+  {booking_id:1,member_id:1,schedule_id:1,booking_time:'2026-11-02 21:14',booking_status:'Booked',waitlist_position:null},
+  {booking_id:2,member_id:1,schedule_id:2,booking_time:'2026-11-02 21:15',booking_status:'Booked',waitlist_position:null},
+  {booking_id:3,member_id:2,schedule_id:2,booking_time:'2026-11-03 08:02',booking_status:'Booked',waitlist_position:null},
+  {booking_id:4,member_id:3,schedule_id:2,booking_time:'2026-11-03 09:40',booking_status:'Waitlist',waitlist_position:1},
+  {booking_id:5,member_id:2,schedule_id:3,booking_time:'2026-11-03 10:11',booking_status:'Booked',waitlist_position:null},
+  {booking_id:6,member_id:1,schedule_id:5,booking_time:'2026-10-24 19:40',booking_status:'Attended',waitlist_position:null},
+  {booking_id:7,member_id:2,schedule_id:5,booking_time:'2026-10-25 08:02',booking_status:'NoShow',waitlist_position:null}]
+};}
+let DB=seed(), S={user:null,view:'login',flash:null,form:{},roster:null,phones:null};
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const nextId=(t,k)=>DB[t].reduce((m,r)=>Math.max(m,r[k]),0)+1;
+const TH_M=['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+const TH_D=['อาทิตย์','จันทร์','อังคาร','พุธ','พฤหัสบดี','ศุกร์','เสาร์'];
+function fd(d){if(!d)return '—';const [y,m,dd]=d.slice(0,10).split('-').map(Number);return `${dd} ${TH_M[m-1]} ${y+543}`}
+function fdl(d){const dt=new Date(d+'T00:00:00');return `${TH_D[dt.getDay()]} ${fd(d)}`}
+function addMonths(d,n){const [y,m,dd]=d.split('-').map(Number);const dt=new Date(Date.UTC(y,m-1+n,dd));return dt.toISOString().slice(0,10)}
+const money=n=>Number(n).toLocaleString('en-US',{minimumFractionDigits:0});
+const bt=v=>{const [d,t]=v.split(' ');const [y,m,dd]=d.split('-');return `${dd}/${m} ${t}`};
+const nowStamp=()=>TODAY+' '+new Date().toTimeString().slice(0,5);
+function lit(k,v){if(v===null||v===undefined||v==='')return 'NULL';if(typeof v==='number')return String(v);return (NV.has(k)?"N'":"'")+String(v).replace(/'/g,"''")+"'"}
+function ins(t,o){const ks=Object.keys(o);return `INSERT INTO ${t} (${ks.join(', ')})\nVALUES (${ks.map(k=>k==='password_hash'?"CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', @password), 2)":lit(k,o[k])).join(', ')});`}
+const plan=id=>DB.membership_plan.find(p=>p.plan_id===id);
+const ctype=id=>DB.class_type.find(c=>c.class_type_id===id);
+const trn=id=>DB.trainer.find(t=>t.trainer_id===id);
+const acc=id=>DB.user_account.find(a=>a.user_id===id);
+const mem=id=>DB.member.find(m=>m.member_id===id);
+const booked=sid=>DB.class_booking.filter(b=>b.schedule_id===sid&&(b.booking_status==='Booked'||b.booking_status==='Attended')).length;
+const waitN=sid=>DB.class_booking.filter(b=>b.schedule_id===sid&&b.booking_status==='Waitlist').length;
+function mstatus(m){if(!m.end_date)return ['ยังไม่มีแพ็กเกจ','warn'];return m.end_date>=TODAY?['Active','ok']:['Expired','bad']}
+const E=s=>`<span class="e">${s}</span>`;
+
+function explain(){}
+/* ---------- presenter steps ---------- */
+const STEPS=[
+ ['1','Log in',()=>{logout();go('login')}],
+ ['2','ลงทะเบียนสมาชิก',()=>{logout();go('register')}],
+ ['3','เลือกแพ็กเกจ',()=>{login('kitti');go('plans')}],
+ ['4','ตารางคลาส + จอง',()=>{login('somchai');go('classes')}],
+ ['5','การจองของฉัน',()=>{login('somchai');go('me')}],
+ ['6','สมัครเป็นเทรนเนอร์',()=>{logout();go('apply')}],
+ ['7','เทรนเนอร์เช็คชื่อ',()=>{login('coach_praewa');go('t-classes')}],
+ ['8','Admin อนุมัติ',()=>{login('admin');go('a-dash')}],
+ ['9','Admin เพิ่มคลาส',()=>{login('admin');go('a-schedule')}],
+];
+let curStep='1';
+function renderSteps(){$('#steps').innerHTML=STEPS.map(s=>`<button class="step${s[0]===curStep?' on':''}" data-step="${s[0]}"><b>${s[0]}</b>${s[1]}</button>`).join('')}
+$('#steps').onclick=e=>{const b=e.target.closest('[data-step]');if(!b)return;curStep=b.dataset.step;renderSteps();STEPS.find(s=>s[0]===curStep)[2]()};
+$('#reset').onclick=()=>{DB=seed();S.flash={k:'ok',t:'รีเซ็ตข้อมูลกลับเป็นข้อมูลตัวอย่างแล้ว'};logout();curStep='1';renderSteps();go('login')};
+
+/* ---------- auth ---------- */
+function login(u){const a=DB.user_account.find(x=>x.username===u);S.user=a;S.roster=null}
+function logout(){S.user=null;S.roster=null}
+function me(){return S.user&&S.user.role==='Member'?DB.member.find(m=>m.user_id===S.user.user_id):null}
+function meT(){return S.user&&S.user.role==='Trainer'?DB.trainer.find(t=>t.user_id===S.user.user_id):null}
+
+/* ---------- router ---------- */
+const URL_OF={login:'/login',register:'/register',apply:'/apply-trainer',plans:'/member/plans',classes:'/member/classes',me:'/member/me','t-classes':'/trainer/classes','a-dash':'/admin','a-schedule':'/admin/schedule','a-plans':'/admin/plans','a-members':'/admin/members'};
+function go(v,keepSql){S.view=v;render(keepSql)}
+function head(){
+  if(!S.user) return `<div class="apphead"><span class="logo">FitPulse<small>Club</small></span></div>`;
+  const r=S.user.role; let items=[];
+  if(r==='Member') items=[['classes','ตารางคลาส'],['me','การจองของฉัน'],['plans','แพ็กเกจ']];
+  if(r==='Trainer') items=[['t-classes','คลาสของฉัน']];
+  if(r==='Admin') items=[['a-dash','Dashboard'],['a-schedule','ตารางคลาส'],['a-plans','แพ็กเกจ'],['a-members','สมาชิก']];
+  let name=S.user.username; const m=me(), t=meT(); if(m)name=m.first_name; if(t)name='ครู'+t.first_name;
+  return `<div class="apphead"><span class="logo">FitPulse<small>Club</small></span><nav class="nav">${items.map(i=>`<button data-go="${i[0]}" class="${S.view===i[0]?'on':''}">${i[1]}</button>`).join('')}</nav>
+   <span class="who">${esc(name)} <span class="pill n">${r}</span><button data-act="logout">ออกจากระบบ</button></span></div>`;
+}
+function flash(){if(!S.flash)return '';const f=S.flash;S.flash=null;return `<div class="msg ${f.k}" role="status">${f.t}</div>`}
+function render(keepSql){
+    const V=VIEWS[S.view]();
+  $('#app').innerHTML=head()+`<div class="view">${V.html}</div>`;
+  if(!keepSql) explain(V.ex);
+  if(V.after)V.after();
+}
+
+/* ---------- views ---------- */
+const VIEWS={
+login(){return {html:`<form class="login" id="f-login" autocomplete="off">
+  <h2>เข้าสู่ระบบ FitPulse</h2>${flash()}
+  <div class="fld"><label for="lu">ชื่อผู้ใช้</label><input id="lu" name="u" value="${esc(S.form.lu||'')}"></div>
+  <div class="fld"><label for="lp">รหัสผ่าน</label><input id="lp" name="p" type="password"></div>
+  <button class="btn p" type="submit">เข้าสู่ระบบ</button>
+  <p class="sub" style="text-align:center">ยังไม่มีบัญชี? <a href="#" data-go="register">ลงทะเบียนสมาชิก</a> · <a href="#" data-go="apply">สมัครเป็นเทรนเนอร์</a></p>
+  <div class="demoacc">บัญชีตัวอย่าง (คลิกเพื่อกรอก): <code data-fill="somchai|Member@123">somchai</code> · <code data-fill="kitti|Member@123">kitti</code> (ยังไม่มีแพ็กเกจ) · <code data-fill="coach_praewa|Trainer@123">coach_praewa</code> · <code data-fill="coach_mint|Trainer@123">coach_mint</code> (รออนุมัติ) · <code data-fill="admin|Admin@123">admin</code> · <code data-fill="teacher|Teacher@123">teacher</code></div>
+ </form>`,ex:{title:'หน้า Log in',tag:'ขั้น 1',ents:['ACC'],attrs:{ACC:['ชื่อผู้ใช้','รหัสผ่าน','บทบาท','สถานะบัญชี']},sql:'',
+ say:`เปิดเว็บมาจะเจอหน้า Log in ก่อนเสมอ ช่องที่กรอกคือ <b>ชื่อผู้ใช้</b> กับ <b>รหัสผ่าน</b> ซึ่งเป็น attribute ของ ${E('USER_ACCOUNT')} ทุกคนในระบบ ทั้งสมาชิก เทรนเนอร์ และ Admin มีบัญชีอยู่ในตารางนี้ตารางเดียว<br>กดเข้าสู่ระบบแล้ว ระบบหาบัญชีที่ชื่อผู้ใช้และรหัสผ่านตรงกัน จากนั้นอ่าน <b>บทบาท</b> (role) เพื่อพาไปหน้าของคนนั้น และอ่าน <b>สถานะบัญชี</b> ว่าเข้าได้หรือยัง Admin ไม่มี Entity แยก เป็นแค่บัญชีที่ role = 'Admin'`}}},
+
+register(){const f=S.form.reg||{};const ph=S.phones||[''];return {html:`<div><h2>ลงทะเบียนสมาชิกใหม่</h2><p class="sub">กรอกข้อมูลให้ครบเพื่อสร้างบัญชี ช่องที่มี * ต้องกรอก</p></div>${flash()}
+ <form id="f-reg" class="card" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
+  <div class="sec">ข้อมูลส่วนตัว</div>
+  <div class="form">
+   <div class="fld"><label for="r_fn">ชื่อจริง *</label><input id="r_fn" value="${esc(f.r_fn||'')}"></div>
+   <div class="fld"><label for="r_ln">นามสกุล *</label><input id="r_ln" value="${esc(f.r_ln||'')}"></div>
+   <div class="fld"><label for="r_em">อีเมล *</label><input id="r_em" type="email" value="${esc(f.r_em||'')}"></div>
+   <div class="fld"><label for="r_bd">วันเกิด *</label><input id="r_bd" type="date" value="${esc(f.r_bd||'')}"></div>
+   <div class="fld"><label for="r_g">เพศ *</label><select id="r_g"><option value="">เลือก</option><option value="M"${f.r_g==='M'?' selected':''}>ชาย</option><option value="F"${f.r_g==='F'?' selected':''}>หญิง</option><option value="O"${f.r_g==='O'?' selected':''}>อื่น ๆ</option></select></div>
+   <div class="fld"><label>เบอร์โทร * (ใส่ได้หลายเบอร์)</label><div class="phones">${ph.map((p,i)=>`<div class="row"><input id="r_ph${i}" data-ph="${i}" value="${esc(p)}" placeholder="08x-xxx-xxxx"><button type="button" class="btn s" data-act="delph" data-i="${i}" ${ph.length<2?'disabled':''} aria-label="ลบเบอร์">ลบ</button></div>`).join('')}<button type="button" class="btn s" data-act="addph" style="width:max-content">+ เพิ่มเบอร์</button></div></div>
+  </div>
+  <div class="sec">บัญชีสำหรับ Log in</div>
+  <div class="form">
+   <div class="fld"><label for="r_u">ชื่อผู้ใช้ *</label><input id="r_u" value="${esc(f.r_u||'')}"></div>
+   <div class="fld"><label for="r_p">รหัสผ่าน * (อย่างน้อย 6 ตัว)</label><input id="r_p" type="password"></div>
+  </div>
+  <div class="row"><button type="button" class="btn" data-act="fillreg">กรอกข้อมูลตัวอย่าง</button><span class="sp"></span><button type="button" class="btn" data-go="login">ยกเลิก</button><button class="btn p" type="submit">ลงทะเบียน</button></div>
+ </form>`,ex:{title:'ลงทะเบียนสมาชิก',tag:'ขั้น 2',ents:['ACC','MEM'],rels:['R1'],attrs:{ACC:['ชื่อผู้ใช้','รหัสผ่าน'],MEM:['ชื่อจริง','นามสกุล','อีเมล','วันเกิด','เพศ','เบอร์โทร']},sql:'',
+ say:`คนที่ยังไม่มีบัญชีต้องลงทะเบียนก่อน ฟอร์มแบ่งเป็น 2 ส่วนตาม ER<br>ส่วนแรกเป็น attribute ของ ${E('MEMBER')} คือ ชื่อจริง นามสกุล อีเมล วันเกิด เพศ และ <b>เบอร์โทร</b> ซึ่งเป็นวงรีสองชั้น (Multi-valued) จึงเพิ่มได้หลายเบอร์<br>ส่วนที่สองเป็นของ ${E('USER_ACCOUNT')} คือชื่อผู้ใช้กับรหัสผ่าน สองส่วนนี้เชื่อมกันด้วยความสัมพันธ์ <b>ใช้บัญชี</b> แบบ 1:1 ฝั่ง MEMBER เป็นเส้นคู่ (Total) เพราะสมาชิกทุกคนต้องมีบัญชี`}}},
+
+apply(){const f=S.form.app||{};const ph=S.phones||[''];return {html:`<div><h2>สมัครเป็นเทรนเนอร์</h2><p class="sub">ส่งข้อมูลให้ Admin ตรวจสอบ เมื่ออนุมัติแล้วจึง Log in ได้</p></div>${flash()}
+ <form id="f-app" class="card" style="display:flex;flex-direction:column;gap:12px" autocomplete="off">
+  <div class="sec">ข้อมูลเทรนเนอร์</div>
+  <div class="form">
+   <div class="fld"><label for="a_fn">ชื่อจริง *</label><input id="a_fn" value="${esc(f.a_fn||'')}"></div>
+   <div class="fld"><label for="a_ln">นามสกุล *</label><input id="a_ln" value="${esc(f.a_ln||'')}"></div>
+   <div class="fld"><label for="a_em">อีเมล *</label><input id="a_em" type="email" value="${esc(f.a_em||'')}"></div>
+   <div class="fld"><label for="a_sp">ความเชี่ยวชาญ *</label><input id="a_sp" value="${esc(f.a_sp||'')}" placeholder="เช่น Yoga, Zumba"></div>
+   <div class="fld"><label for="a_ex">ประสบการณ์ (ปี) *</label><input id="a_ex" type="number" min="0" value="${esc(f.a_ex??'')}"></div>
+   <div class="fld"><label>เบอร์โทร *</label><div class="phones">${ph.map((p,i)=>`<div class="row"><input id="a_ph${i}" data-ph="${i}" value="${esc(p)}" placeholder="08x-xxx-xxxx"><button type="button" class="btn s" data-act="delph" data-i="${i}" ${ph.length<2?'disabled':''}>ลบ</button></div>`).join('')}<button type="button" class="btn s" data-act="addph" style="width:max-content">+ เพิ่มเบอร์</button></div></div>
+  </div>
+  <div class="sec">บัญชีสำหรับ Log in</div>
+  <div class="form">
+   <div class="fld"><label for="a_u">ชื่อผู้ใช้ *</label><input id="a_u" value="${esc(f.a_u||'')}"></div>
+   <div class="fld"><label for="a_p">รหัสผ่าน *</label><input id="a_p" type="password"></div>
+  </div>
+  <div class="row"><button type="button" class="btn" data-act="fillapp">กรอกข้อมูลตัวอย่าง</button><span class="sp"></span><button type="button" class="btn" data-go="login">ยกเลิก</button><button class="btn p" type="submit">ส่งใบสมัคร</button></div>
+ </form>`,ex:{title:'สมัครเป็นเทรนเนอร์',tag:'ขั้น 6',ents:['ACC','TRN'],rels:['R2'],attrs:{ACC:['ชื่อผู้ใช้','รหัสผ่าน','บทบาท','สถานะบัญชี'],TRN:['ชื่อจริง','นามสกุล','อีเมล','ความเชี่ยวชาญ','ประสบการณ์ (ปี)','เบอร์โทร']},sql:'',
+ say:`ใครอยากเป็นเทรนเนอร์ก็ส่งใบสมัครผ่านหน้านี้ ข้อมูลเป็น attribute ของ ${E('TRAINER')} และเบอร์โทรก็เป็น Multi-valued เหมือนสมาชิก<br>TRAINER เชื่อมกับ ${E('USER_ACCOUNT')} ด้วย <b>ใช้บัญชี</b> แบบ 1:1 เหมือนกัน แต่บัญชีจะได้ role = 'Trainer' และ <b>สถานะบัญชี = 'Pending'</b> ส่วนวันเริ่มงานยังว่าง (NULL) จนกว่า Admin จะอนุมัติ`}}},
+
+plans(){const m=me();const list=DB.membership_plan.filter(p=>p.is_active);const best=Math.min(...list.map(p=>p.price));const cur=m.plan_id?plan(m.plan_id):null;
+ return {html:`<div><h2>${cur?'แพ็กเกจของคุณ':'สวัสดีคุณ'+esc(m.first_name)+' · เลือกแพ็กเกจ'}</h2><p class="sub">${cur?`ตอนนี้ใช้ <b>${esc(cur.plan_name)}</b> ถึง ${fd(m.end_date)} เลือกใหม่ได้เมื่อหมดอายุ`:'คุณยังไม่มีแพ็กเกจ เลือก 1 แพ็กเกจเพื่อเริ่มจองคลาส'}</p></div>${flash()}
+ <div class="plans">${list.map(p=>`<div class="plan"><div class="ph">${esc(p.plan_name)}</div><div class="pb"><div class="price">${money(p.price)} <small>บาท/เดือน</small></div>
+  ${p.billing_type==='PIA'?`<div class="sub">จ่ายล่วงหน้า รวม ${money(p.price*p.duration_months)} บาท</div>`:'<div class="sub">ชำระรายเดือน</div>'}
+  <div>${p.class_quota===null?'จองคลาสไม่จำกัด':'จองคลาสได้ '+p.class_quota+' ครั้ง/เดือน'}</div><div>ระยะเวลา ${p.duration_months} เดือน</div>
+  ${p.price===best?'<span class="pill ok">คุ้มที่สุด</span>':''}
+  <button class="btn p" data-act="choose" data-id="${p.plan_id}" ${cur&&m.end_date>=TODAY?'disabled':''}>${cur&&cur.plan_id===p.plan_id?'ใช้อยู่':'เลือก'}</button></div></div>`).join('')}</div>
+ `,
+ ex:{title:'เลือกแพ็กเกจ',tag:'ขั้น 3',ents:['MEM','PLAN'],rels:['R3'],sql:`-- แสดงแพ็กเกจที่เปิดขาย\nSELECT plan_id, plan_name, duration_months, price, billing_type, class_quota\nFROM membership_plan\nWHERE is_active = 1;`,
+ say:`สมาชิกที่ Log in แล้วแต่ยังไม่มีแพ็กเกจจะถูกพามาหน้านี้ การ์ดแต่ละใบคือ 1 แถวของ ${E('MEMBERSHIP_PLAN')} ที่ยังเปิดขาย<br>${E('MEMBER')} กับ MEMBERSHIP_PLAN สัมพันธ์กันด้วย <b>เลือก</b> แบบ <b>M:1</b> สมาชิกหลายคนเลือกแพ็กเกจเดียวกันได้ แต่สมาชิก 1 คนมีแพ็กเกจได้ 1 แพ็กเกจ ทั้งสองฝั่งเป็นเส้นเดียว (Partial) เพราะสมาชิกใหม่ยังไม่ได้เลือก และแพ็กเกจใหม่อาจยังไม่มีคนเลือก`}}},
+
+classes(){const m=me();const [st,stk]=mstatus(m);const up=DB.class_schedule.filter(s=>s.class_date>=TODAY).sort((a,b)=>(a.class_date+a.start_time).localeCompare(b.class_date+b.start_time));
+ const days=[...new Set(up.map(s=>s.class_date))];
+ return {html:`<div class="row"><div><h2>ตารางคลาสที่เปิดจอง</h2><p class="sub">สถานะสมาชิก <span class="pill ${stk}">${st}</span>${m.end_date?' · หมดอายุ '+fd(m.end_date):''}</p></div></div>${flash()}
+ ${days.map(d=>`<div class="day"><h3>${fdl(d)}</h3>${up.filter(s=>s.class_date===d).map(s=>{const t=ctype(s.class_type_id),tr=trn(s.trainer_id),b=booked(s.schedule_id),left=s.max_capacity-b;
+   const mine=DB.class_booking.find(x=>x.member_id===m.member_id&&x.schedule_id===s.schedule_id&&x.booking_status!=='Cancelled');
+   let btn;
+   if(s.schedule_status==='Cancelled')btn='<span class="pill bad">ยกเลิกคลาส</span>';
+   else if(mine&&mine.booking_status==='Waitlist')btn=`<span class="pill warn">คิวรอที่ ${mine.waitlist_position}</span> <button class="btn s" data-act="cancel" data-id="${mine.booking_id}">ออกจากคิว</button>`;
+   else if(mine)btn=`<span class="pill ok">จองแล้ว</span> <button class="btn s" data-act="cancel" data-id="${mine.booking_id}">ยกเลิก</button>`;
+   else if(left<=0)btn=`<button class="btn" data-act="book" data-id="${s.schedule_id}">เข้าคิวรอ</button>`;
+   else btn=`<button class="btn p" data-act="book" data-id="${s.schedule_id}">จอง</button>`;
+   return `<div class="cls"><div class="t">${s.start_time}<br>${s.end_time}</div><div><b>${esc(t.type_name)}</b> <span class="pill n">${t.level}</span><div class="m">ครู${esc(tr.first_name)} · ${esc(s.room_name)}</div><div class="seat">${left>0?`ว่าง ${left} จาก ${s.max_capacity} ที่`:`เต็ม ${b}/${s.max_capacity}${waitN(s.schedule_id)?' · คิวรอ '+waitN(s.schedule_id)+' คน':''}`}</div></div><div class="row">${btn}</div></div>`}).join('')}</div>`).join('')}
+ `,
+ ex:{title:'ตารางคลาสและการจอง',tag:'ขั้น 4',ents:['SCHED','TYPE','TRN','BOOK','MEM'],rels:['R7','R6','R5','R4'],attrs:{SCHED:['ห้อง','วันที่เรียน','เวลาเริ่ม','เวลาสิ้นสุด','จำนวนที่นั่งสูงสุด','จำนวนที่จองแล้ว'],TYPE:['ชื่อประเภท','ระดับ'],TRN:['ชื่อจริง']},
+ sql:`-- ดึงตารางคลาส พร้อมนับที่จองแล้ว (Derived)\nSELECT s.schedule_id, t.type_name, t.level, tr.first_name, s.room_name,\n       s.class_date, s.start_time, s.end_time, s.max_capacity,\n       (SELECT COUNT(*) FROM class_booking b\n         WHERE b.schedule_id = s.schedule_id\n           AND b.booking_status IN ('Booked','Attended')) AS current_booked\nFROM class_schedule s\nJOIN class_type t ON t.class_type_id = s.class_type_id\nJOIN trainer tr  ON tr.trainer_id    = s.trainer_id\nWHERE s.class_date >= '${TODAY}'\nORDER BY s.class_date, s.start_time;`,
+ say:`การ์ดแต่ละใบคือ 1 แถวของ ${E('CLASS_SCHEDULE')} ชื่อคลาสกับระดับดึงจาก ${E('CLASS_TYPE')} ผ่านเส้น <b>จัดประเภท</b> และชื่อครูดึงจาก ${E('TRAINER')} ผ่านเส้น <b>สอน</b> ฝั่ง CLASS_SCHEDULE เป็นเส้นคู่ทั้งสองเส้น เพราะทุกรอบต้องมีประเภทและผู้สอน<br>ตัวเลข “ว่างกี่ที่” มาจาก <b>จำนวนที่จองแล้ว</b> ซึ่งเป็น Derived Attribute (วงรีเส้นประ) นับจาก CLASS_BOOKING ไม่ได้เก็บเป็นคอลัมน์<br>MEMBER กับ CLASS_SCHEDULE เป็น M:N จึงมี ${E('CLASS_BOOKING')} อยู่ตรงกลาง กดจอง 1 ครั้ง = เพิ่ม 1 แถวใน CLASS_BOOKING`}}},
+
+me(){const m=me();const p=m.plan_id?plan(m.plan_id):null;const [st,stk]=mstatus(m);const phones=DB.member_phone.filter(x=>x.member_id===m.member_id);
+ const bk=DB.class_booking.filter(b=>b.member_id===m.member_id).map(b=>({b,s:DB.class_schedule.find(s=>s.schedule_id===b.schedule_id)})).sort((a,b)=>(b.s.class_date+b.s.start_time).localeCompare(a.s.class_date+a.s.start_time));
+ const pk={Booked:'ok',Waitlist:'warn',Cancelled:'n',Attended:'ok',NoShow:'bad'};
+ return {html:`<div><h2>${esc(m.first_name)} ${esc(m.last_name)} <span class="pill ${stk}">${st}</span></h2><p class="sub">บัญชี ${esc(S.user.username)} · สมัครเมื่อ ${fd(S.user.created_at)}</p></div>${flash()}
+ <div class="prof"><div class="card"><h3>ข้อมูลส่วนตัว</h3><dl class="kv"><dt>อีเมล</dt><dd>${esc(m.email)}</dd><dt>วันเกิด</dt><dd>${fd(m.birth_date)}</dd><dt>เพศ</dt><dd>${{M:'ชาย',F:'หญิง',O:'อื่น ๆ'}[m.gender]}</dd><dt>เบอร์โทร</dt><dd>${phones.map(x=>esc(x.phone)).join('<br>')}</dd></dl></div>
+ <div class="card"><h3>แพ็กเกจของฉัน</h3>${p?`<dl class="kv"><dt>แพ็กเกจ</dt><dd>${esc(p.plan_name)}</dd><dt>ราคา</dt><dd>${money(p.price)} บาท/เดือน (${p.billing_type})</dd><dt>โควตาคลาส</dt><dd>${p.class_quota===null?'ไม่จำกัด':p.class_quota+' ครั้ง/เดือน'}</dd><dt>ระยะเวลา</dt><dd>${fd(m.start_date)} – ${fd(m.end_date)}</dd></dl>`:`<p class="sub">ยังไม่มีแพ็กเกจ</p><button class="btn p" data-go="plans">เลือกแพ็กเกจ</button>`}</div></div>
+ <h3>การจองของฉัน</h3>
+ <div class="tw"><table><thead><tr><th>วันที่</th><th>คลาส</th><th>เวลา</th><th>จองเมื่อ</th><th>สถานะ</th><th></th></tr></thead><tbody>
+ ${bk.map(({b,s})=>`<tr><td>${fd(s.class_date)}</td><td>${esc(ctype(s.class_type_id).type_name)}</td><td class="n">${s.start_time}</td><td class="n">${bt(b.booking_time)}</td><td><span class="pill ${pk[b.booking_status]}">${b.booking_status}${b.waitlist_position?' · คิว '+b.waitlist_position:''}</span></td><td>${(b.booking_status==='Booked'||b.booking_status==='Waitlist')&&s.class_date>=TODAY?`<button class="btn s" data-act="cancel" data-id="${b.booking_id}">ยกเลิก</button>`:''}</td></tr>`).join('')||'<tr><td colspan="6" class="sub">ยังไม่มีการจอง</td></tr>'}
+ </tbody></table></div>`,
+ ex:{title:'โปรไฟล์และการจองของฉัน',tag:'ขั้น 5',ents:['MEM','PLAN','BOOK','SCHED'],rels:['R3','R4','R5'],attrs:{MEM:['ชื่อจริง','นามสกุล','อีเมล','วันเกิด','เพศ','เบอร์โทร','วันเริ่มต้น','วันหมดอายุ','สถานะสมาชิก']},
+ sql:`SELECT m.first_name, m.last_name, m.email, m.birth_date, m.gender,\n       p.plan_name, p.price, m.start_date, m.end_date,\n       CASE WHEN m.end_date >= '${TODAY}' THEN 'Active' ELSE 'Expired' END AS member_status\nFROM member m LEFT JOIN membership_plan p ON p.plan_id = m.plan_id\nWHERE m.member_id = ${m.member_id};\n\nSELECT phone FROM member_phone WHERE member_id = ${m.member_id};\n\nSELECT s.class_date, t.type_name, s.start_time, b.booking_time, b.booking_status\nFROM class_booking b\nJOIN class_schedule s ON s.schedule_id = b.schedule_id\nJOIN class_type t ON t.class_type_id = s.class_type_id\nWHERE b.member_id = ${m.member_id};`,
+ say:`หน้านี้รวมข้อมูลจาก 3 ส่วนของ ER<br>1) ข้อมูลส่วนตัวจาก ${E('MEMBER')} และเบอร์โทรจากตาราง member_phone (Multi-valued จึงแสดงได้หลายบรรทัด)<br>2) แพ็กเกจจาก ${E('MEMBERSHIP_PLAN')} ผ่าน plan_id ตามเส้น <b>เลือก</b><br>3) รายการจองจาก ${E('CLASS_BOOKING')} ที่ member_id ตรงกัน ตามเส้น <b>จอง</b> (1:M)<br>ป้าย Active/Expired คือ <b>สถานะสมาชิก</b> ซึ่งเป็น Derived Attribute คำนวณจากวันหมดอายุทุกครั้งที่เปิดหน้า`}}},
+
+'t-classes'(){const t=meT();const list=DB.class_schedule.filter(s=>s.trainer_id===t.trainer_id).sort((a,b)=>(a.class_date+a.start_time).localeCompare(b.class_date+b.start_time));
+ const phones=DB.trainer_phone.filter(x=>x.trainer_id===t.trainer_id);
+ let roster='';if(S.roster){const s=DB.class_schedule.find(x=>x.schedule_id===S.roster);const rows=DB.class_booking.filter(b=>b.schedule_id===s.schedule_id&&b.booking_status!=='Cancelled');
+  roster=`<div class="card" id="roster"><div class="row"><h3>รายชื่อผู้จอง · ${esc(ctype(s.class_type_id).type_name)} ${fd(s.class_date)} ${s.start_time}</h3><span class="sp"></span><button class="btn s" data-act="closeroster">ปิด</button></div>
+  <div class="tw" style="margin-top:8px"><table><thead><tr><th>สมาชิก</th><th>จองเมื่อ</th><th>สถานะ</th><th>เช็คชื่อ</th></tr></thead><tbody>${rows.map(b=>{const mm=mem(b.member_id);return `<tr><td>${esc(mm.first_name)} ${esc(mm.last_name)}</td><td class="n">${bt(b.booking_time)}</td><td><span class="pill ${b.booking_status==='Attended'?'ok':b.booking_status==='NoShow'?'bad':b.booking_status==='Waitlist'?'warn':'n'}">${b.booking_status}${b.waitlist_position?' · คิว '+b.waitlist_position:''}</span></td><td>${b.booking_status==='Waitlist'?'<span class="sub">อยู่ในคิว</span>':`<button class="btn s ${b.booking_status==='Attended'?'p':''}" data-act="mark" data-st="Attended" data-id="${b.booking_id}">มา</button> <button class="btn s ${b.booking_status==='NoShow'?'p':''}" data-act="mark" data-st="NoShow" data-id="${b.booking_id}">ไม่มา</button>`}</td></tr>`}).join('')||'<tr><td colspan="4" class="sub">ยังไม่มีคนจอง</td></tr>'}</tbody></table></div></div>`}
+ return {html:`<div><h2>คลาสของฉัน</h2><p class="sub">ครู${esc(t.first_name)} ${esc(t.last_name)} · ${esc(t.specialization)} · ${phones.map(p=>esc(p.phone)).join(', ')} · เริ่มงาน ${fd(t.hire_date)}</p></div>${flash()}
+ <div class="tw"><table><thead><tr><th>วันที่</th><th>คลาส</th><th>ห้อง</th><th>ที่นั่ง</th><th>จอง</th><th>มา</th><th>ไม่มา</th><th>คิวรอ</th><th></th></tr></thead><tbody>
+ ${list.map(s=>{const bs=DB.class_booking.filter(b=>b.schedule_id===s.schedule_id);const c=k=>bs.filter(b=>b.booking_status===k).length;
+  return `<tr><td>${fd(s.class_date)}</td><td>${esc(ctype(s.class_type_id).type_name)}</td><td>${esc(s.room_name)}</td><td class="n">${s.max_capacity}</td><td class="n">${c('Booked')+c('Attended')+c('NoShow')}</td><td class="n">${c('Attended')}</td><td class="n">${c('NoShow')}</td><td class="n">${c('Waitlist')}</td><td><button class="btn s p" data-act="roster" data-id="${s.schedule_id}">เช็คชื่อ</button></td></tr>`}).join('')||'<tr><td colspan="9" class="sub">ยังไม่มีคลาส</td></tr>'}
+ </tbody></table></div>${roster}`,
+ ex:{title:'คลาสของฉัน (เทรนเนอร์)',tag:'ขั้น 7',ents:['TRN','SCHED','BOOK','MEM'],rels:['R6','R5','R4'],attrs:{SCHED:['วันที่เรียน','ห้อง','จำนวนที่นั่งสูงสุด'],BOOK:['สถานะการจอง','เวลาที่จอง'],MEM:['ชื่อจริง','นามสกุล']},
+ sql:`SELECT s.schedule_id, s.class_date, t.type_name, s.room_name, s.max_capacity,\n       SUM(CASE WHEN b.booking_status = 'Attended' THEN 1 ELSE 0 END) AS attended,\n       SUM(CASE WHEN b.booking_status = 'NoShow'   THEN 1 ELSE 0 END) AS no_show\nFROM class_schedule s\nJOIN class_type t ON t.class_type_id = s.class_type_id\nLEFT JOIN class_booking b ON b.schedule_id = s.schedule_id\nWHERE s.trainer_id = ${t.trainer_id}\nGROUP BY s.schedule_id, s.class_date, t.type_name, s.room_name, s.max_capacity;`,
+ say:`เทรนเนอร์ที่ Log in (role = 'Trainer') เห็นเฉพาะคลาสที่ตัวเองสอน คือแถวของ ${E('CLASS_SCHEDULE')} ที่ trainer_id ตรงกับตัวเอง ตามเส้น <b>สอน</b> (1:M) ฝั่ง TRAINER เป็นเส้นเดียวเพราะเทรนเนอร์ใหม่อาจยังไม่มีคลาส<br>กดเช็คชื่อจะเห็นรายชื่อจาก ${E('CLASS_BOOKING')} ของรอบนั้น (เส้น <b>ถูกจองใน</b>) แล้ว JOIN ไปหา ${E('MEMBER')} เพื่อเอาชื่อ (เส้น <b>จอง</b>) กด “มา” หรือ “ไม่มา” จะแก้สถานะการจองเป็น Attended หรือ NoShow`}}},
+
+'a-dash'(){const pend=DB.trainer.filter(t=>acc(t.user_id).account_status==='Pending');const act=DB.member.filter(m=>m.end_date&&m.end_date>=TODAY).length;
+ const wk=DB.class_schedule.filter(s=>s.class_date>='2026-11-09'&&s.class_date<='2026-11-15').length;
+ return {html:`<div><h2>Dashboard</h2><p class="sub">บัญชี ${esc(S.user.username)} · role = Admin</p></div>${flash()}
+ <div class="kpis"><div class="card kpi"><div class="v">${DB.member.length}</div><div class="l">สมาชิกทั้งหมด</div></div><div class="card kpi"><div class="v">${act}</div><div class="l">สมาชิก Active</div></div><div class="card kpi"><div class="v">${DB.trainer.filter(t=>acc(t.user_id).account_status==='Active').length}</div><div class="l">เทรนเนอร์ที่ทำงาน</div></div><div class="card kpi"><div class="v">${wk}</div><div class="l">คลาส 9–15 พ.ย.</div></div></div>
+ <h3>เทรนเนอร์รออนุมัติ (${pend.length})</h3>
+ <div class="tw"><table><thead><tr><th>ชื่อ</th><th>ความเชี่ยวชาญ</th><th>ประสบการณ์</th><th>อีเมล / เบอร์</th><th>สมัครเมื่อ</th><th></th></tr></thead><tbody>
+ ${pend.map(t=>`<tr><td>${esc(t.first_name)} ${esc(t.last_name)}</td><td>${esc(t.specialization)}</td><td class="n">${t.experience_years} ปี</td><td>${esc(t.email)}<br>${DB.trainer_phone.filter(p=>p.trainer_id===t.trainer_id).map(p=>esc(p.phone)).join(', ')}</td><td>${fd(acc(t.user_id).created_at)}</td><td><button class="btn s p" data-act="approve" data-id="${t.trainer_id}">อนุมัติ</button> <button class="btn s" data-act="reject" data-id="${t.trainer_id}">ปฏิเสธ</button></td></tr>`).join('')||'<tr><td colspan="6" class="sub">ไม่มีใบสมัครที่รออยู่</td></tr>'}
+ </tbody></table></div>`,
+ ex:{title:'หลังบ้าน Admin · อนุมัติเทรนเนอร์',tag:'ขั้น 8',ents:['ACC','TRN'],rels:['R2'],attrs:{ACC:['บทบาท','สถานะบัญชี','วันที่สร้างบัญชี'],TRN:['ชื่อจริง','นามสกุล','ความเชี่ยวชาญ','ประสบการณ์ (ปี)','อีเมล','เบอร์โทร','วันเริ่มงาน']},
+ sql:`-- เทรนเนอร์ที่รออนุมัติ\nSELECT t.trainer_id, t.first_name, t.last_name, t.specialization,\n       t.experience_years, a.created_at\nFROM trainer t\nJOIN user_account a ON a.user_id = t.user_id\nWHERE a.account_status = 'Pending';`,
+ say:`Admin คือบัญชีใน ${E('USER_ACCOUNT')} ที่ role = 'Admin' ระบบจึงพามาหน้าหลังบ้าน (บัญชี admin กับ teacher ไว้ให้เรากับอาจารย์ใช้)<br>ตารางรออนุมัติคือ ${E('TRAINER')} ที่ JOIN กับบัญชีของตัวเองผ่านเส้น <b>ใช้บัญชี</b> แล้วกรองเฉพาะสถานะบัญชี = 'Pending' กดอนุมัติแล้ว 2 ตารางจะเปลี่ยน คือสถานะบัญชีเป็น 'Active' และวันเริ่มงานของเทรนเนอร์เป็นวันนี้`}}},
+
+'a-schedule'(){const f=S.form.sch||{};const trs=DB.trainer.filter(t=>acc(t.user_id).account_status==='Active');
+ const list=DB.class_schedule.slice().sort((a,b)=>(a.class_date+a.start_time).localeCompare(b.class_date+b.start_time));
+ return {html:`<div><h2>ตารางคลาส</h2><p class="sub">เพิ่มรอบคลาสใหม่ แล้วสมาชิกจะเห็นในหน้าตารางคลาสทันที</p></div>${flash()}
+ <form id="f-sch" class="card" style="display:flex;flex-direction:column;gap:12px" autocomplete="off"><div class="sec">เพิ่มรอบคลาส</div>
+ <div class="form">
+  <div class="fld"><label for="s_t">ประเภทคลาส *</label><select id="s_t">${DB.class_type.map(c=>`<option value="${c.class_type_id}"${+f.s_t===c.class_type_id?' selected':''}>${esc(c.type_name)} (${c.level})</option>`).join('')}</select></div>
+  <div class="fld"><label for="s_tr">เทรนเนอร์ *</label><select id="s_tr">${trs.map(t=>`<option value="${t.trainer_id}"${+f.s_tr===t.trainer_id?' selected':''}>${esc(t.first_name)} ${esc(t.last_name)} · ${esc(t.specialization)}</option>`).join('')}</select></div>
+  <div class="fld"><label for="s_r">ห้อง *</label><input id="s_r" value="${esc(f.s_r??'Studio A')}"></div>
+  <div class="fld"><label for="s_d">วันที่ *</label><input id="s_d" type="date" value="${esc(f.s_d||'2026-11-13')}"></div>
+  <div class="fld"><label for="s_st">เวลาเริ่ม *</label><input id="s_st" type="time" value="${esc(f.s_st||'18:00')}"></div>
+  <div class="fld"><label for="s_en">เวลาสิ้นสุด *</label><input id="s_en" type="time" value="${esc(f.s_en||'19:00')}"></div>
+  <div class="fld"><label for="s_c">ที่นั่งสูงสุด *</label><input id="s_c" type="number" min="1" value="${esc(f.s_c||'15')}"></div>
+ </div><div class="row"><span class="sp"></span><button class="btn p" type="submit">บันทึกรอบคลาส</button></div></form>
+ <div class="tw"><table><thead><tr><th>วันที่</th><th>เวลา</th><th>คลาส</th><th>ครู</th><th>ห้อง</th><th>จอง/ที่นั่ง</th><th>สถานะ</th></tr></thead><tbody>
+ ${list.map(s=>`<tr><td>${fd(s.class_date)}</td><td class="n">${s.start_time}–${s.end_time}</td><td>${esc(ctype(s.class_type_id).type_name)}</td><td>${esc(trn(s.trainer_id).first_name)}</td><td>${esc(s.room_name)}</td><td class="n">${booked(s.schedule_id)}/${s.max_capacity}</td><td><span class="pill ${s.schedule_status==='Open'?'ok':s.schedule_status==='Full'?'warn':'bad'}">${s.schedule_status}</span></td></tr>`).join('')}
+ </tbody></table></div>`,
+ ex:{title:'หลังบ้าน Admin · เพิ่มรอบคลาส',tag:'ขั้น 9',ents:['SCHED','TYPE','TRN'],rels:['R7','R6'],attrs:{SCHED:['ห้อง','วันที่เรียน','เวลาเริ่ม','เวลาสิ้นสุด','จำนวนที่นั่งสูงสุด','สถานะคลาส'],TYPE:['ชื่อประเภท','ระดับ'],TRN:['ชื่อจริง','ความเชี่ยวชาญ']},sql:'',
+ say:`ฟอร์มนี้สร้างแถวใหม่ใน ${E('CLASS_SCHEDULE')} ตัวเลือกประเภทคลาสดึงมาจาก ${E('CLASS_TYPE')} และตัวเลือกเทรนเนอร์ดึงจาก ${E('TRAINER')} ที่บัญชี Active เท่านั้น<br>เลือกแล้วระบบเก็บเป็น Foreign Key 2 ตัว คือ class_type_id (เส้น <b>จัดประเภท</b>) และ trainer_id (เส้น <b>สอน</b>) ฝั่ง CLASS_SCHEDULE เป็นเส้นคู่ เพราะบันทึกรอบคลาสโดยไม่เลือกประเภทหรือครูไม่ได้ ห้องเป็นแค่คอลัมน์ room_name ไม่ได้แยกเป็น Entity`}}},
+
+'a-plans'(){const f=S.form.pl||{};return {html:`<div><h2>แพ็กเกจสมาชิก</h2><p class="sub">เปิด/ปิดขาย และเพิ่มแพ็กเกจใหม่</p></div>${flash()}
+ <div class="tw"><table><thead><tr><th>แพ็กเกจ</th><th>ราคา/เดือน</th><th>ระยะเวลา</th><th>การชำระ</th><th>โควตาคลาส</th><th>สมาชิกที่เลือก</th><th>สถานะ</th></tr></thead><tbody>
+ ${DB.membership_plan.map(p=>`<tr><td>${esc(p.plan_name)}</td><td class="n">${money(p.price)}</td><td class="n">${p.duration_months} เดือน</td><td>${p.billing_type}</td><td>${p.class_quota===null?'ไม่จำกัด':p.class_quota}</td><td class="n">${DB.member.filter(m=>m.plan_id===p.plan_id).length}</td><td><button class="btn s ${p.is_active?'p':''}" data-act="toggleplan" data-id="${p.plan_id}">${p.is_active?'เปิดขาย':'ปิดขาย'}</button></td></tr>`).join('')}
+ </tbody></table></div>
+ <form id="f-pl" class="card" style="display:flex;flex-direction:column;gap:12px" autocomplete="off"><div class="sec">เพิ่มแพ็กเกจ</div><div class="form">
+  <div class="fld"><label for="p_n">ชื่อแพ็กเกจ *</label><input id="p_n" value="${esc(f.p_n||'Student 3 เดือน')}"></div>
+  <div class="fld"><label for="p_m">ระยะเวลา (เดือน) *</label><input id="p_m" type="number" min="1" value="${esc(f.p_m||'3')}"></div>
+  <div class="fld"><label for="p_pr">ราคาต่อเดือน *</label><input id="p_pr" type="number" min="0" value="${esc(f.p_pr||'1290')}"></div>
+  <div class="fld"><label for="p_b">รูปแบบการชำระ *</label><select id="p_b"><option>Monthly</option><option>PIA</option></select></div>
+  <div class="fld"><label for="p_q">โควตาคลาส/เดือน (เว้นว่าง = ไม่จำกัด)</label><input id="p_q" type="number" min="0" value="${esc(f.p_q??'6')}"></div>
+ </div><div class="row"><span class="sp"></span><button class="btn p" type="submit">เพิ่มแพ็กเกจ</button></div></form>`,
+ ex:{title:'หลังบ้าน Admin · แพ็กเกจ',tag:'Admin',ents:['PLAN','MEM'],rels:['R3'],sql:`SELECT p.*, (SELECT COUNT(*) FROM member m WHERE m.plan_id = p.plan_id) AS members\nFROM membership_plan p;`,
+ say:`Admin จัดการ ${E('MEMBERSHIP_PLAN')} ได้เอง คอลัมน์ “สมาชิกที่เลือก” นับจาก ${E('MEMBER')} ที่ plan_id ตรงกัน ตามเส้น <b>เลือก</b> (M:1) ปุ่มเปิด/ปิดขายแก้ค่า is_active ถ้าปิดแล้ว การ์ดแพ็กเกจจะไม่โผล่ในหน้าเลือกแพ็กเกจของสมาชิก แต่สมาชิกที่เลือกไว้แล้วยังใช้ต่อได้`}}},
+
+'a-members'(){return {html:`<div><h2>สมาชิกทั้งหมด (${DB.member.length})</h2></div>${flash()}
+ <div class="tw"><table><thead><tr><th>รหัส</th><th>ชื่อ-นามสกุล</th><th>บัญชี</th><th>เบอร์โทร</th><th>แพ็กเกจ</th><th>หมดอายุ</th><th>สถานะ</th></tr></thead><tbody>
+ ${DB.member.map(m=>{const [st,k]=mstatus(m);return `<tr><td class="n">${m.member_id}</td><td>${esc(m.first_name)} ${esc(m.last_name)}</td><td>${esc(acc(m.user_id).username)}</td><td>${DB.member_phone.filter(p=>p.member_id===m.member_id).map(p=>esc(p.phone)).join('<br>')}</td><td>${m.plan_id?esc(plan(m.plan_id).plan_name):'—'}</td><td>${fd(m.end_date)}</td><td><span class="pill ${k}">${st}</span></td></tr>`}).join('')}
+ </tbody></table></div>`,
+ ex:{title:'หลังบ้าน Admin · สมาชิก',tag:'Admin',ents:['MEM','ACC','PLAN'],rels:['R1','R3'],attrs:{MEM:['รหัสสมาชิก','ชื่อจริง','นามสกุล','เบอร์โทร','วันหมดอายุ','สถานะสมาชิก']},
+ sql:`SELECT m.member_id, m.first_name, m.last_name, a.username, p.plan_name, m.end_date\nFROM member m\nJOIN user_account a ON a.user_id = m.user_id\nLEFT JOIN membership_plan p ON p.plan_id = m.plan_id;`,
+ say:`รายชื่อสมาชิกดึงจาก ${E('MEMBER')} แล้ว JOIN 2 ทาง คือไป ${E('USER_ACCOUNT')} เพื่อเอาชื่อบัญชี (เส้น <b>ใช้บัญชี</b>) และไป ${E('MEMBERSHIP_PLAN')} เพื่อเอาชื่อแพ็กเกจ (เส้น <b>เลือก</b>) ใช้ LEFT JOIN เพราะสมาชิกบางคนยังไม่มีแพ็กเกจ ซึ่งตรงกับเส้นเดียว (Partial) ฝั่ง MEMBER`}}},
+};
+
+/* ---------- actions ---------- */
+function val(id){const el=document.getElementById(id);return el?el.value.trim():''}
+function readPhones(){return [...document.querySelectorAll('[data-ph]')].map(i=>i.value.trim())}
+function saveForm(key,ids){S.form[key]=Object.fromEntries(ids.map(i=>[i,val(i)]))}
+function exFrom(view,patch){return Object.assign({},VIEWS[view]().ex,patch)}
+
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g&&g.closest('#app')){e.preventDefault();const v=g.dataset.go;if(v==='register'||v==='apply')S.phones=null;go(v);return}
+  const f=e.target.closest('[data-fill]'); if(f){const [u,p]=f.dataset.fill.split('|');$('#lu').value=u;$('#lp').value=p;return}
+  const a=e.target.closest('[data-act]'); if(!a||!a.closest('#app'))return; const act=a.dataset.act, id=+a.dataset.id;
+  if(act==='logout'){logout();S.flash={k:'ok',t:'ออกจากระบบแล้ว'};go('login');return}
+  if(act==='addph'||act==='delph'){const isReg=S.view==='register';saveForm(isReg?'reg':'app',isReg?['r_fn','r_ln','r_em','r_bd','r_g','r_u']:['a_fn','a_ln','a_em','a_sp','a_ex','a_u']);
+    S.phones=readPhones();if(act==='addph')S.phones.push('');else S.phones.splice(+a.dataset.i,1);render(true);return}
+  if(act==='fillreg'){S.form.reg={r_fn:'ปวีณา',r_ln:'สุขสม',r_em:'paweena@email.com',r_bd:'2002-03-14',r_g:'F',r_u:'paweena'};S.phones=['095-111-2233','02-555-0101'];render(true);document.getElementById('r_p').value='Member@123';return}
+  if(act==='fillapp'){S.form.app={a_fn:'ภูมิ',a_ln:'ใจกล้า',a_em:'phum@email.com',a_sp:'Spinning',a_ex:'3',a_u:'coach_phum'};S.phones=['091-222-3333'];render(true);document.getElementById('a_p').value='Trainer@123';return}
+  if(act==='choose'){const m=me(),p=plan(id),st=TODAY,en=addMonths(TODAY,p.duration_months);m.plan_id=id;m.start_date=st;m.end_date=en;
+    S.flash={k:'ok',t:`เลือกแพ็กเกจ ${p.plan_name} แล้ว ใช้ได้ถึง ${fd(en)} ตอนนี้จองคลาสได้แล้ว`};go('classes');
+    explain(exFrom('plans',{title:'บันทึกแพ็กเกจที่เลือก',sql:`UPDATE member\nSET plan_id    = ${id},\n    start_date = '${st}',\n    end_date   = DATEADD(MONTH, ${p.duration_months}, '${st}')   -- = '${en}'\nWHERE member_id = ${m.member_id};`,
+     say:`กด “เลือก” แล้วระบบ <b>UPDATE</b> ตาราง member ของคุณ${esc(m.first_name)} ใส่ 3 ค่า: plan_id = ${id} (Foreign Key ไปที่ ${E('MEMBERSHIP_PLAN')}), วันเริ่มต้น = วันนี้ และวันหมดอายุ = วันเริ่ม + ${p.duration_months} เดือน = ${fd(en)}<br>ตอนนี้เส้น <b>เลือก</b> ของสมาชิกคนนี้ผูกกับแพ็กเกจแล้ว และ <b>สถานะสมาชิก</b> (Derived) คำนวณได้เป็น Active ระบบจึงพาไปหน้าตารางคลาสต่อ`,attrs:{MEM:['วันเริ่มต้น','วันหมดอายุ','สถานะสมาชิก'],PLAN:['รหัสแพ็กเกจ','ระยะเวลา (เดือน)']}}));return}
+  if(act==='book'){bookClass(id);return}
+  if(act==='cancel'){cancelBooking(id);return}
+  if(act==='roster'){S.roster=id;go('t-classes');const s=DB.class_schedule.find(x=>x.schedule_id===id);
+    explain(exFrom('t-classes',{title:'รายชื่อผู้จองของรอบนี้',sql:`SELECT b.booking_id, m.first_name, m.last_name, b.booking_time, b.booking_status\nFROM class_booking b\nJOIN member m ON m.member_id = b.member_id\nWHERE b.schedule_id = ${id}\n  AND b.booking_status <> 'Cancelled';`,
+     say:`รายชื่อนี้คือแถวของ ${E('CLASS_BOOKING')} ที่ schedule_id = ${id} (เส้น <b>ถูกจองใน</b>: คลาส 1 รอบมีการจองได้หลายแถว) แล้ว JOIN ไป ${E('MEMBER')} ผ่าน member_id เพื่อเอาชื่อ (เส้น <b>จอง</b>) ตารางนี้จึงเป็นตัวกลางของความสัมพันธ์ M:N ระหว่างสมาชิกกับตารางคลาส`}));
+    setTimeout(()=>{const r=document.getElementById('roster');if(r)r.scrollIntoView({block:'nearest',behavior:'smooth'})},50);return}
+  if(act==='closeroster'){S.roster=null;go('t-classes');return}
+  if(act==='mark'){const b=DB.class_booking.find(x=>x.booking_id===id);b.booking_status=a.dataset.st;const mm=mem(b.member_id);go('t-classes');
+    explain(exFrom('t-classes',{title:'บันทึกการเข้าเรียน',sql:`UPDATE class_booking\nSET booking_status = '${b.booking_status}'\nWHERE booking_id = ${id};`,attrs:{BOOK:['สถานะการจอง']},
+     say:`เช็คชื่อคุณ${esc(mm.first_name)} เป็น <b>${b.booking_status==='Attended'?'มาเรียน':'ไม่มา'}</b> ระบบแก้แค่คอลัมน์ booking_status ของแถวนั้นใน ${E('CLASS_BOOKING')} ไม่ต้องสร้างตารางใหม่ ข้อมูลนี้ใช้นับยอดคนมาเรียนจริงในรายงาน และสมาชิกจะเห็นสถานะเดียวกันในหน้าการจองของตัวเอง`}));return}
+  if(act==='approve'||act==='reject'){const t=DB.trainer.find(x=>x.trainer_id===id),ac=acc(t.user_id);
+    if(act==='approve'){ac.account_status='Active';t.hire_date=TODAY;S.flash={k:'ok',t:`อนุมัติครู${t.first_name}แล้ว ตอนนี้ Log in ด้วย ${ac.username} ได้`}}
+    else{ac.account_status='Rejected';S.flash={k:'warn',t:`ปฏิเสธใบสมัครของ ${t.first_name} แล้ว`}}
+    go('a-dash');explain(exFrom('a-dash',{title:act==='approve'?'อนุมัติเทรนเนอร์':'ปฏิเสธใบสมัคร',
+     sql:act==='approve'?`UPDATE user_account SET account_status = 'Active'\nWHERE user_id = ${ac.user_id};\n\nUPDATE trainer SET hire_date = '${TODAY}'\nWHERE trainer_id = ${id};`:`UPDATE user_account SET account_status = 'Rejected'\nWHERE user_id = ${ac.user_id};`,
+     attrs:{ACC:['สถานะบัญชี'],TRN:['วันเริ่มงาน']},
+     say:act==='approve'?`กดอนุมัติแล้วแก้ 2 ตารางที่เชื่อมกันด้วยเส้น <b>ใช้บัญชี</b>: ${E('USER_ACCOUNT')} เปลี่ยนสถานะบัญชีจาก Pending เป็น Active และ ${E('TRAINER')} ใส่วันเริ่มงานเป็นวันนี้<br>ลองกด Log in ด้วย <b>${ac.username}</b> ดูได้ ระบบจะพาไปหน้าคลาสของเทรนเนอร์ และชื่อครู${esc(t.first_name)}จะอยู่ใน dropdown ตอนเพิ่มรอบคลาสแล้ว`:`ปฏิเสธแล้วสถานะบัญชีเป็น Rejected ข้อมูลยังอยู่ แต่ Log in ไม่ได้`}));return}
+  if(act==='toggleplan'){const p=plan(id);p.is_active=p.is_active?0:1;go('a-plans');explain(exFrom('a-plans',{title:p.is_active?'เปิดขายแพ็กเกจ':'ปิดขายแพ็กเกจ',sql:`UPDATE membership_plan SET is_active = ${p.is_active}\nWHERE plan_id = ${id};`}));return}
+});
+
+function bookClass(sid){
+  const m=me(),s=DB.class_schedule.find(x=>x.schedule_id===sid),t=ctype(s.class_type_id),p=m.plan_id?plan(m.plan_id):null;
+  const base=exFrom('classes',{});
+  if(!m.end_date||m.end_date<s.class_date){S.flash={k:'bad',t:'ยังจองไม่ได้ เพราะแพ็กเกจหมดอายุก่อนวันเรียน หรือยังไม่ได้เลือกแพ็กเกจ'};go('classes');
+    explain(Object.assign(base,{title:'จองไม่ผ่าน: สถานะสมาชิก',sql:`-- ตรวจสถานะสมาชิกก่อนจอง (Derived จาก end_date)\nSELECT end_date FROM member WHERE member_id = ${m.member_id};`,attrs:{MEM:['วันหมดอายุ','สถานะสมาชิก']},say:`ก่อนจอง ระบบดู <b>สถานะสมาชิก</b> ซึ่งคำนวณจากวันหมดอายุของ ${E('MEMBER')} ถ้ายังไม่มีแพ็กเกจหรือหมดอายุก่อนวันเรียน จะไม่สร้างแถวใน CLASS_BOOKING`}));return}
+  if(p&&p.class_quota!==null){const ym=s.class_date.slice(0,7);const used=DB.class_booking.filter(b=>b.member_id===m.member_id&&['Booked','Attended','NoShow'].includes(b.booking_status)&&DB.class_schedule.find(x=>x.schedule_id===b.schedule_id).class_date.slice(0,7)===ym).length;
+    if(used>=p.class_quota){S.flash={k:'bad',t:`จองไม่ได้ ใช้โควตาเดือนนี้ครบ ${p.class_quota} ครั้งแล้ว`};go('classes');return}}
+  const b=booked(sid),full=b>=s.max_capacity,pos=full?waitN(sid)+1:null;
+  const row={booking_id:nextId('class_booking','booking_id'),member_id:m.member_id,schedule_id:sid,booking_time:nowStamp(),booking_status:full?'Waitlist':'Booked',waitlist_position:pos};
+  const old=DB.class_booking.find(x=>x.member_id===m.member_id&&x.schedule_id===sid);
+  let sql=`-- 1) นับที่จองแล้ว: ${b} จาก ${s.max_capacity} ที่ → ${full?'เต็ม เข้าคิวรอ':'ยังว่าง'}\n`;
+  if(old){Object.assign(old,{booking_time:row.booking_time,booking_status:row.booking_status,waitlist_position:pos});
+    sql+=`-- 2) เคยจองรอบนี้แล้วยกเลิก (UNIQUE member_id + schedule_id) จึงแก้แถวเดิม\nUPDATE class_booking\nSET booking_status = '${row.booking_status}', waitlist_position = ${pos??'NULL'}, booking_time = GETDATE()\nWHERE booking_id = ${old.booking_id};`}
+  else{DB.class_booking.push(row);sql+='-- 2) เพิ่มการจอง\n'+ins('class_booking',{member_id:m.member_id,schedule_id:sid,booking_status:row.booking_status,waitlist_position:pos})}
+  if(!full&&b+1>=s.max_capacity){s.schedule_status='Full';sql+=`\n\n-- 3) ที่นั่งเต็มพอดี\nUPDATE class_schedule SET schedule_status = 'Full' WHERE schedule_id = ${sid};`}
+  S.flash={k:full?'warn':'ok',t:full?`${t.type_name} เต็มแล้ว คุณอยู่คิวรอที่ ${pos}`:`จอง ${t.type_name} ${fdl(s.class_date)} ${s.start_time} สำเร็จ`};go('classes');
+  explain(Object.assign(base,{title:full?'คลาสเต็ม → เข้าคิวรอ':'จองคลาสสำเร็จ',sql,attrs:{BOOK:['รหัสการจอง','เวลาที่จอง','สถานะการจอง','ลำดับคิวรอ'],SCHED:['จำนวนที่นั่งสูงสุด','จำนวนที่จองแล้ว']},
+   say:`กดจอง 1 ครั้ง = เพิ่ม 1 แถวใน ${E('CLASS_BOOKING')} ที่เก็บ member_id (เส้น <b>จอง</b>) และ schedule_id (เส้น <b>ถูกจองใน</b>) เป็น Foreign Key ทั้งคู่ ฝั่ง CLASS_BOOKING เป็นเส้นคู่ เพราะการจองต้องมีทั้งคนจองและรอบคลาสเสมอ<br>ก่อนบันทึก ระบบนับ <b>จำนวนที่จองแล้ว</b> (Derived) = ${b} เทียบกับ <b>จำนวนที่นั่งสูงสุด</b> = ${s.max_capacity} ${full?`ที่นั่งเต็ม จึงบันทึกเป็น <b>Waitlist</b> พร้อมลำดับคิวรอ = ${pos}`:`ยังว่าง จึงบันทึกเป็น <b>Booked</b>`}`}));
+}
+function cancelBooking(id){
+  const bk=DB.class_booking.find(x=>x.booking_id===id),s=DB.class_schedule.find(x=>x.schedule_id===bk.schedule_id),wasBooked=bk.booking_status==='Booked',oldPos=bk.waitlist_position;
+  bk.booking_status='Cancelled';bk.waitlist_position=null;
+  let sql=`UPDATE class_booking\nSET booking_status = 'Cancelled', waitlist_position = NULL\nWHERE booking_id = ${id};`, extra='';
+  const q=DB.class_booking.filter(x=>x.schedule_id===s.schedule_id&&x.booking_status==='Waitlist').sort((a,b)=>a.waitlist_position-b.waitlist_position);
+  if(wasBooked&&q.length){const f=q[0];f.booking_status='Booked';f.waitlist_position=null;q.slice(1).forEach(x=>x.waitlist_position--);const fm=mem(f.member_id);
+    sql+=`\n\n-- มีคิวรอ: เลื่อนคิวแรกขึ้นมาเป็น Booked\nUPDATE class_booking\nSET booking_status = 'Booked', waitlist_position = NULL\nWHERE booking_id = ${f.booking_id};\n\nUPDATE class_booking\nSET waitlist_position = waitlist_position - 1\nWHERE schedule_id = ${s.schedule_id} AND booking_status = 'Waitlist';`;
+    extra=`<br>รอบนี้มีคิวรออยู่ ระบบจึงเลื่อนคุณ${esc(fm.first_name)} (คิวที่ 1) ขึ้นมาเป็น Booked แทน แล้วขยับคิวที่เหลือขึ้น 1 ลำดับ`}
+  else if(!wasBooked){q.filter(x=>x.waitlist_position>oldPos).forEach(x=>x.waitlist_position--)}
+  else if(s.schedule_status==='Full'&&booked(s.schedule_id)<s.max_capacity){s.schedule_status='Open';sql+=`\n\nUPDATE class_schedule SET schedule_status = 'Open' WHERE schedule_id = ${s.schedule_id};`}
+  S.flash={k:'ok',t:'ยกเลิกการจองแล้ว'};const v=S.view;go(v);
+  explain(exFrom(v,{title:'ยกเลิกการจอง',sql,attrs:{BOOK:['สถานะการจอง','ลำดับคิวรอ']},rels:['R4','R5'],ents:['MEM','BOOK','SCHED'],
+   say:`ยกเลิกไม่ได้ลบแถวออกจาก ${E('CLASS_BOOKING')} แต่แก้ booking_status เป็น <b>Cancelled</b> เพื่อเก็บประวัติไว้ ที่นั่งจึงว่างเพิ่ม 1 ที่ เพราะจำนวนที่จองแล้ว (Derived) นับเฉพาะ Booked กับ Attended${extra}`}));
+}
+
+document.addEventListener('submit',e=>{
+  const f=e.target; if(!f.closest('#app'))return; e.preventDefault();
+  if(f.id==='f-login'){const u=val('lu'),p=val('lp');S.form.lu=u;const a=DB.user_account.find(x=>x.username===u&&x.pw===p);
+    const sql=`DECLARE @username VARCHAR(50) = '${u.replace(/'/g,"''")}';\nSELECT user_id, role, account_status\nFROM user_account\nWHERE username = @username\n  AND password_hash = CONVERT(VARCHAR(255), HASHBYTES('SHA2_256', @password), 2);`;
+    if(!a){S.flash={k:'bad',t:'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง ลองใหม่อีกครั้ง'};go('login');explain(exFrom('login',{title:'Log in ไม่ผ่าน',sql:sql+'\n-- ไม่พบแถว → ชื่อผู้ใช้หรือรหัสผ่านผิด'}));return}
+    if(a.account_status!=='Active'){S.flash={k:'warn',t:a.account_status==='Pending'?'บัญชีนี้กำลังรอ Admin อนุมัติ ยังเข้าระบบไม่ได้':'ใบสมัครนี้ถูกปฏิเสธแล้ว'};go('login');
+      explain(exFrom('login',{title:'บัญชียังไม่ Active',sql:sql+`\n-- พบแถว: role = '${a.role}', account_status = '${a.account_status}'`,say:`พบบัญชี <b>${esc(u)}</b> ใน ${E('USER_ACCOUNT')} แต่ <b>สถานะบัญชี = '${a.account_status}'</b> ${a.account_status==='Pending'?'เพราะเป็นเทรนเนอร์ที่สมัครแล้วแต่ Admin ยังไม่อนุมัติ':''} ระบบจึงไม่ให้เข้า ถ้าอยากให้เข้าได้ ต้องให้ Admin อนุมัติก่อน (ขั้น 8)`}));return}
+    login(u);S.form.lu='';const dest=a.role==='Admin'?'a-dash':a.role==='Trainer'?'t-classes':(me().plan_id?'classes':'plans');
+    const why=a.role==='Admin'?'ไปหน้าหลังบ้าน':a.role==='Trainer'?'ไปหน้าคลาสของเทรนเนอร์':(me().plan_id?'สมาชิกคนนี้มีแพ็กเกจแล้ว จึงไปหน้าตารางคลาส':'สมาชิกคนนี้ยังไม่มีแพ็กเกจ (plan_id เป็น NULL) จึงไปหน้าเลือกแพ็กเกจ');
+    go(dest);explain(exFrom('login',{title:'Log in สำเร็จ',sql:sql+`\n-- พบแถว: user_id = ${a.user_id}, role = '${a.role}', account_status = 'Active'`,
+      say:`ระบบพบบัญชี <b>${esc(u)}</b> ใน ${E('USER_ACCOUNT')} รหัสผ่านตรง และสถานะบัญชีเป็น Active<br>จากนั้นอ่าน <b>บทบาท = '${a.role}'</b> → ${why}<br>เลื่อนลงดูหน้าใหม่ทางซ้าย แล้วแผงนี้จะเปลี่ยนเป็นคำอธิบายของหน้านั้นเมื่อกดเมนู`}));return}
+  if(f.id==='f-reg'||f.id==='f-app'){const isReg=f.id==='f-reg';const P=isReg?'r_':'a_';const phones=readPhones().filter(Boolean);
+    const d={fn:val(P+'fn'),ln:val(P+'ln'),em:val(P+'em'),u:val(P+'u'),pw:val(P+'p')};
+    if(isReg){d.bd=val('r_bd');d.g=val('r_g')}else{d.sp=val('a_sp');d.ex=val('a_ex')}
+    saveForm(isReg?'reg':'app',isReg?['r_fn','r_ln','r_em','r_bd','r_g','r_u']:['a_fn','a_ln','a_em','a_sp','a_ex','a_u']);S.phones=readPhones();
+    let err='';
+    if(!d.fn||!d.ln||!d.em||!d.u||!d.pw||(isReg&&(!d.bd||!d.g))||(!isReg&&(!d.sp||d.ex==='')))err='กรอกช่องที่มี * ให้ครบ';
+    else if(!phones.length)err='ใส่เบอร์โทรอย่างน้อย 1 เบอร์';
+    else if(new Set(phones).size!==phones.length)err='มีเบอร์โทรซ้ำกัน';
+    else if(d.pw.length<6)err='รหัสผ่านต้องมีอย่างน้อย 6 ตัว';
+    else if(DB.user_account.some(a=>a.username===d.u))err=`ชื่อผู้ใช้ ${d.u} มีคนใช้แล้ว ลองชื่ออื่น`;
+    else if((isReg?DB.member:DB.trainer).some(x=>x.email===d.em))err='อีเมลนี้ลงทะเบียนแล้ว';
+    else if(!isReg&&+d.ex<0)err='ประสบการณ์ต้องไม่ติดลบ';
+    if(err){S.flash={k:'bad',t:err};render(true);return}
+    const uid=nextId('user_account','user_id');
+    DB.user_account.push({user_id:uid,username:d.u,pw:d.pw,role:isReg?'Member':'Trainer',account_status:isReg?'Active':'Pending',created_at:nowStamp()});
+    let sql=`-- 1) สร้างบัญชี\nDECLARE @password VARCHAR(100) = '••••••';\n`+ins('user_account',{username:d.u,password_hash:1,role:isReg?'Member':'Trainer',account_status:isReg?'Active':'Pending'})+`\n-- ได้ user_id = ${uid}\n\n`;
+    if(isReg){const mid=nextId('member','member_id');DB.member.push({member_id:mid,user_id:uid,first_name:d.fn,last_name:d.ln,email:d.em,birth_date:d.bd,gender:d.g,plan_id:null,start_date:null,end_date:null});
+      phones.forEach(ph=>DB.member_phone.push({member_id:mid,phone:ph}));
+      sql+=`-- 2) สร้างสมาชิก (FK user_id) ยังไม่มีแพ็กเกจ\n`+ins('member',{user_id:uid,first_name:d.fn,last_name:d.ln,email:d.em,birth_date:d.bd,gender:d.g,plan_id:null})+`\n-- ได้ member_id = ${mid}\n\n-- 3) เบอร์โทร (Multi-valued) เบอร์ละ 1 แถว\n`+phones.map(ph=>ins('member_phone',{member_id:mid,phone:ph})).join('\n');}
+    else{const tid=nextId('trainer','trainer_id');DB.trainer.push({trainer_id:tid,user_id:uid,first_name:d.fn,last_name:d.ln,email:d.em,specialization:d.sp,experience_years:+d.ex,hire_date:null});
+      phones.forEach(ph=>DB.trainer_phone.push({trainer_id:tid,phone:ph}));
+      sql+=`-- 2) สร้างเทรนเนอร์ (FK user_id) ยังไม่มีวันเริ่มงาน\n`+ins('trainer',{user_id:uid,first_name:d.fn,last_name:d.ln,email:d.em,specialization:d.sp,experience_years:+d.ex,hire_date:null})+`\n-- ได้ trainer_id = ${tid}\n\n-- 3) เบอร์โทร (Multi-valued)\n`+phones.map(ph=>ins('trainer_phone',{trainer_id:tid,phone:ph})).join('\n');}
+    S.form[isReg?'reg':'app']={};S.phones=null;S.form.lu=d.u;
+    S.flash={k:'ok',t:isReg?`ลงทะเบียนสำเร็จ Log in ด้วย ${d.u} ได้เลย`:`ส่งใบสมัครแล้ว รอ Admin อนุมัติก่อนจึง Log in ได้`};go('login');
+    explain(exFrom(isReg?'register':'apply',{title:isReg?'บันทึกการลงทะเบียน':'บันทึกใบสมัครเทรนเนอร์',sql,
+      say:isReg?`กดลงทะเบียนแล้ว ระบบบันทึก 3 ตารางตามลำดับ<br>1) ${E('USER_ACCOUNT')} ได้ user_id = ${uid} role = 'Member'<br>2) ${E('MEMBER')} ที่เก็บ user_id = ${uid} เป็น Foreign Key นี่คือเส้น <b>ใช้บัญชี</b> 1:1 (user_id ใน member เป็น UNIQUE)<br>3) member_phone ${phones.length} แถว ตามจำนวนเบอร์ เพราะเบอร์โทรเป็น Multi-valued<br>plan_id ยังเป็น NULL เพราะยังไม่ได้เลือกแพ็กเกจ ตรงกับเส้นเดียว (Partial) ฝั่ง MEMBER ของเส้น <b>เลือก</b> ต่อไปให้ Log in ด้วยบัญชีนี้`
+        :`บันทึก 3 ตารางเหมือนสมาชิก แต่บัญชีใน ${E('USER_ACCOUNT')} ได้ role = 'Trainer' และสถานะ <b>'Pending'</b> ส่วน ${E('TRAINER')} ยังไม่มีวันเริ่มงาน ถ้าลอง Log in ตอนนี้จะเข้าไม่ได้ ต้องให้ Admin อนุมัติก่อน (ขั้น 8)`}));return}
+  if(f.id==='f-sch'){saveForm('sch',['s_t','s_tr','s_r','s_d','s_st','s_en','s_c']);const d=S.form.sch;let err='';
+    if(!d.s_r||!d.s_d||!d.s_st||!d.s_en||!d.s_c)err='กรอกให้ครบทุกช่อง';else if(d.s_en<=d.s_st)err='เวลาสิ้นสุดต้องหลังเวลาเริ่ม';else if(+d.s_c<=0)err='ที่นั่งต้องมากกว่า 0';
+    if(err){S.flash={k:'bad',t:err};render(true);return}
+    const row={schedule_id:nextId('class_schedule','schedule_id'),class_type_id:+d.s_t,trainer_id:+d.s_tr,room_name:d.s_r,class_date:d.s_d,start_time:d.s_st,end_time:d.s_en,max_capacity:+d.s_c,schedule_status:'Open'};
+    DB.class_schedule.push(row);S.flash={k:'ok',t:`เพิ่ม ${ctype(row.class_type_id).type_name} ${fd(row.class_date)} ${row.start_time} แล้ว สมาชิกจองได้ทันที`};go('a-schedule');
+    explain(exFrom('a-schedule',{title:'บันทึกรอบคลาสใหม่',sql:ins('class_schedule',{class_type_id:row.class_type_id,trainer_id:row.trainer_id,room_name:row.room_name,class_date:row.class_date,start_time:row.start_time,end_time:row.end_time,max_capacity:row.max_capacity})+`\n-- ได้ schedule_id = ${row.schedule_id}`,
+     say:`ได้แถวใหม่ใน ${E('CLASS_SCHEDULE')} ที่ชี้ไป ${E('CLASS_TYPE')} (class_type_id = ${row.class_type_id}, ${esc(ctype(row.class_type_id).type_name)}) และ ${E('TRAINER')} (trainer_id = ${row.trainer_id}, ครู${esc(trn(row.trainer_id).first_name)}) ลองไป Log in เป็นสมาชิก (ขั้น 4) จะเห็นคลาสนี้ในตารางคลาส และเทรนเนอร์คนนี้จะเห็นในหน้าคลาสของตัวเอง`}));return}
+  if(f.id==='f-pl'){saveForm('pl',['p_n','p_m','p_pr','p_b','p_q']);const d=S.form.pl;let err='';
+    if(!d.p_n||!d.p_m||d.p_pr==='')err='กรอกชื่อ ระยะเวลา และราคา';else if(+d.p_m<=0)err='ระยะเวลาต้องมากกว่า 0';else if(DB.membership_plan.some(p=>p.plan_name===d.p_n))err='ชื่อแพ็กเกจซ้ำ';
+    if(err){S.flash={k:'bad',t:err};render(true);return}
+    const row={plan_id:nextId('membership_plan','plan_id'),plan_name:d.p_n,duration_months:+d.p_m,price:+d.p_pr,billing_type:d.p_b,class_quota:d.p_q===''?null:+d.p_q,is_active:1};
+    DB.membership_plan.push(row);S.form.pl={};S.flash={k:'ok',t:`เพิ่ม ${row.plan_name} แล้ว`};go('a-plans');
+    explain(exFrom('a-plans',{title:'เพิ่มแพ็กเกจ',sql:ins('membership_plan',{plan_name:row.plan_name,duration_months:row.duration_months,price:row.price,billing_type:row.billing_type,class_quota:row.class_quota})}));return}
+});
+
+renderSteps();go('login');
+})();
+</script>
+
+</body></html>
